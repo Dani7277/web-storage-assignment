@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML5 Web Storage API Demo</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        h2 {
+            color: var(--secondary-color);
+            margin: 2rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--light-color);
+        }
+        
+        h3 {
+            color: var(--primary-color);
+            margin: 1.5rem 0 0.5rem;
+        }
+        
+        p {
+            margin-bottom: 1rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .demo-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .demo-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .demo-box {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+        }
+        
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        
+        .storage-display {
+            background-color: var(--light-color);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1rem;
+            min-height: 100px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        
+        .code-block {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+        
+        .comparison-table th, .comparison-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        .comparison-table th {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .comparison-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        footer {
+            background-color: var(--secondary-color);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            background-color: var(--success-color);
+            color: white;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>HTML5 Web Storage API</h1>
+            <p>Learn how to use localStorage and sessionStorage in your web applications</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="card">
+            <h2>Introduction to Web Storage API</h2>
+            <p>The HTML5 Web Storage API provides mechanisms for browsers to store key/value pairs in a much more intuitive way than using cookies. It offers two main storage mechanisms:</p>
+            
+            <ul>
+                <li><strong>localStorage</strong> - Stores data with no expiration date</li>
+                <li><strong>sessionStorage</strong> - Stores data for one session (data is lost when the browser tab is closed)</li>
+            </ul>
+            
+            <p>Web Storage is more secure and can store larger amounts of data (typically 5-10MB) compared to cookies (4KB). The data is never transferred to the server and is accessible only from the same origin.</p>
+        </div>
+        
+        <div class="card">
+            <h2>localStorage vs sessionStorage</h2>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>localStorage</th>
+                        <th>sessionStorage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Lifetime</td>
+                        <td>Persists until explicitly deleted</td>
+                        <td>Lasts only for the duration of the browser session</td>
+                    </tr>
+                    <tr>
+                        <td>Scope</td>
+                        <td>Shared across all tabs/windows with the same origin</td>
+                        <td>Limited to the browser tab</td>
+                    </tr>
+                    <tr>
+                        <td>Capacity</td>
+                        <td>Typically 5-10MB</td>
+                        <td>Typically 5-10MB</td>
+                    </tr>
+                    <tr>
+                        <td>Accessibility</td>
+                        <td>Accessible from any window/tab with same origin</td>
+                        <td>Accessible only from the same tab</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <h2>Web Storage API in Action</h2>
+        
+        <div class="demo-section">
+            <div class="demo-box">
+                <h3>localStorage Demo</h3>
+                <p>Store data that persists even after closing and reopening the browser.</p>
+                
+                <div class="form-group">
+                    <label for="localKey">Key:</label>
+                    <input type="text" id="localKey" placeholder="Enter a key">
+                </div>
+                
+                <div class="form-group">
+                    <label for="localValue">Value:</label>
+                    <input type="text" id="localValue" placeholder="Enter a value">
+                </div>
+                
+                <button id="saveLocal">Save to localStorage</button>
+                <button id="getLocal" class="btn-success">Get from localStorage</button>
+                <button id="removeLocal" class="btn-danger">Remove from localStorage</button>
+                <button id="clearLocal" class="btn-danger">Clear All localStorage</button>
+                
+                <div class="storage-display" id="localDisplay">
+                    localStorage data will appear here
+                </div>
+            </div>
+            
+            <div class="demo-box">
+                <h3>sessionStorage Demo</h3>
+                <p>Store data that is available only during the current browser session.</p>
+                
+                <div class="form-group">
+                    <label for="sessionKey">Key:</label>
+                    <input type="text" id="sessionKey" placeholder="Enter a key">
+                </div>
+                
+                <div class="form-group">
+                    <label for="sessionValue">Value:</label>
+                    <input type="text" id="sessionValue" placeholder="Enter a value">
+                </div>
+                
+                <button id="saveSession">Save to sessionStorage</button>
+                <button id="getSession" class="btn-success">Get from sessionStorage</button>
+                <button id="removeSession" class="btn-danger">Remove from sessionStorage</button>
+                <button id="clearSession" class="btn-danger">Clear All sessionStorage</button>
+                
+                <div class="storage-display" id="sessionDisplay">
+                    sessionStorage data will appear here
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Code Examples</h2>
+            
+            <h3>Basic localStorage Usage</h3>
+            <div class="code-block">
+// Setting data
+localStorage.setItem('username', 'JohnDoe');
+localStorage.setItem('theme', 'dark');
+
+// Getting data
+const username = localStorage.getItem('username');
+console.log(username); // Output: JohnDoe
+
+// Removing data
+localStorage.removeItem('theme');
+
+// Clearing all data
+localStorage.clear();
+            </div>
+            
+            <h3>Basic sessionStorage Usage</h3>
+            <div class="code-block">
+// Setting data
+sessionStorage.setItem('sessionId', 'abc123');
+sessionStorage.setItem('pageViews', '5');
+
+// Getting data
+const sessionId = sessionStorage.getItem('sessionId');
+console.log(sessionId); // Output: abc123
+
+// Removing data
+sessionStorage.removeItem('pageViews');
+
+// Clearing all data
+sessionStorage.clear();
+            </div>
+            
+            <h3>Storing Objects</h3>
+            <div class="code-block">
+// Web Storage only stores strings, so we need to stringify objects
+const user = {
+    name: 'Jane Smith',
+    email: 'jane@example.com',
+    preferences: {
+        theme: 'light',
+        notifications: true
+    }
+};
+
+// Store object as string
+localStorage.setItem('user', JSON.stringify(user));
+
+// Retrieve and parse object
+const storedUser = JSON.parse(localStorage.getItem('user'));
+console.log(storedUser.name); // Output: Jane Smith
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Browser Compatibility</h2>
+            <p>The Web Storage API is widely supported in all modern browsers, including:</p>
+            <ul>
+                <li>Chrome 4+</li>
+                <li>Firefox 3.5+</li>
+                <li>Safari 4+</li>
+                <li>Opera 10.5+</li>
+                <li>Internet Explorer 8+</li>
+                <li>Edge 12+</li>
+            </ul>
+            
+            <p>To check if the browser supports Web Storage:</p>
+            <div class="code-block">
+if (typeof(Storage) !== "undefined") {
+    // Web Storage is supported
+    // Your storage code here
+} else {
+    // Web Storage is not supported
+    alert("Sorry, your browser doesn't support Web Storage.");
+}
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>Web Storage API Demo &copy; 2023 | Created for educational purposes</p>
+        </div>
+    </footer>
+    
+    <div class="notification" id="notification">Operation completed successfully!</div>
+    
+    <script>
+        // DOM Elements
+        const localKeyInput = document.getElementById('localKey');
+        const localValueInput = document.getElementById('localValue');
+        const saveLocalBtn = document.getElementById('saveLocal');
+        const getLocalBtn = document.getElementById('getLocal');
+        const removeLocalBtn = document.getElementById('removeLocal');
+        const clearLocalBtn = document.getElementById('clearLocal');
+        const localDisplay = document.getElementById('localDisplay');
+        
+        const sessionKeyInput = document.getElementById('sessionKey');
+        const sessionValueInput = document.getElementById('sessionValue');
+        const saveSessionBtn = document.getElementById('saveSession');
+        const getSessionBtn = document.getElementById('getSession');
+        const removeSessionBtn = document.getElementById('removeSession');
+        const clearSessionBtn = document.getElementById('clearSession');
+        const sessionDisplay = document.getElementById('sessionDisplay');
+        
+        const notification = document.getElementById('notification');
+        
+        // Display current storage data on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateLocalStorageDisplay();
+            updateSessionStorageDisplay();
+        });
+        
+        // localStorage Event Listeners
+        saveLocalBtn.addEventListener('click', () => {
+            const key = localKeyInput.value.trim();
+            const value = localValueInput.value.trim();
+            
+            if (key && value) {
+                localStorage.setItem(key, value);
+                showNotification(`Saved "${key}" to localStorage`);
+                updateLocalStorageDisplay();
+                localKeyInput.value = '';
+                localValueInput.value = '';
+            } else {
+                showNotification('Please enter both key and value', true);
+            }
+        });
+        
+        getLocalBtn.addEventListener('click', () => {
+            const key = localKeyInput.value.trim();
+            
+            if (key) {
+                const value = localStorage.getItem(key);
+                if (value !== null) {
+                    localDisplay.textContent = `${key}: ${value}`;
+                    showNotification(`Retrieved "${key}" from localStorage`);
+                } else {
+                    localDisplay.textContent = `Key "${key}" not found in localStorage`;
+                    showNotification(`Key "${key}" not found`, true);
+                }
+            } else {
+                updateLocalStorageDisplay();
+            }
+        });
+        
+        removeLocalBtn.addEventListener('click', () => {
+            const key = localKeyInput.value.trim();
+            
+            if (key) {
+                if (localStorage.getItem(key) !== null) {
+                    localStorage.removeItem(key);
+                    showNotification(`Removed "${key}" from localStorage`);
+                    updateLocalStorageDisplay();
+                } else {
+                    showNotification(`Key "${key}" not found`, true);
+                updateLocalStorageDisplay();
+                localDisplay.textContent = `Key "${key}" not found in localStorage`;
+                localDisplay.textContent += '\n\nCurrent localStorage contents:\n' + getStorageContents(localStorage);
+                localDisplay.textContent += `\n\nTotal items: ${localStorage.length}`;
+            }
+            } else {
+                showNotification('Please enter a key to remove', true);
+            }
+        });
+        
+        clearLocalBtn.addEventListener('click', () => {
+            localStorage.clear();
+            showNotification('Cleared all localStorage data');
+            updateLocalStorageDisplay();
+        });
+        
+        // sessionStorage Event Listeners
+        saveSessionBtn.addEventListener('click', () => {
+            const key = sessionKeyInput.value.trim();
+            const value = sessionValueInput.value.trim();
+            
+            if (key && value) {
+                sessionStorage.setItem(key, value);
+                showNotification(`Saved "${key}" to sessionStorage`);
+                updateSessionStorageDisplay();
+                sessionKeyInput.value = '';
+                sessionValueInput.value = '';
+            } else {
+                showNotification('Please enter both key and value', true);
+            }
+        });
+        
+        getSessionBtn.addEventListener('click', () => {
+            const key = sessionKeyInput.value.trim();
+            
+            if (key) {
+                const value = sessionStorage.getItem(key);
+                if (value !== null) {
+                    sessionDisplay.textContent = `${key}: ${value}`;
+                    showNotification(`Retrieved "${key}" from sessionStorage`);
+                } else {
+                    sessionDisplay.textContent = `Key "${key}" not found in sessionStorage`;
+                    showNotification(`Key "${key}" not found`, true);
+                }
+            } else {
+                updateSessionStorageDisplay();
+            }
+        });
+        
+        removeSessionBtn.addEventListener('click', () => {
+            const key = sessionKeyInput.value.trim();
+            
+            if (key) {
+                if (sessionStorage.getItem(key) !== null) {
+                    sessionStorage.removeItem(key);
+                    showNotification(`Removed "${key}" from sessionStorage`);
+                    updateSessionStorageDisplay();
+                } else {
+                    showNotification(`Key "${key}" not found`, true);
+                    updateSessionStorageDisplay();
+                    sessionDisplay.textContent = `Key "${key}" not found in sessionStorage`;
+                    sessionDisplay.textContent += '\n\nCurrent sessionStorage contents:\n' + getStorageContents(sessionStorage);
+                    sessionDisplay.textContent += `\n\nTotal items: ${sessionStorage.length}`;
+                }
+            } else {
+                showNotification('Please enter a key to remove', true);
+            }
+        });
+        
+        clearSessionBtn.addEventListener('click', () => {
+            sessionStorage.clear();
+            showNotification('Cleared all sessionStorage data');
+            updateSessionStorageDisplay();
+        });
+        
+        // Helper Functions
+        function updateLocalStorageDisplay() {
+            localDisplay.textContent = 'Current localStorage contents:\n' + getStorageContents(localStorage);
+            localDisplay.textContent += `\n\nTotal items: ${localStorage.length}`;
+        }
+        
+        function updateSessionStorageDisplay() {
+            sessionDisplay.textContent = 'Current sessionStorage contents:\n' + getStorageContents(sessionStorage);
+            sessionDisplay.textContent += `\n\nTotal items: ${sessionStorage.length}`;
+        }
+        
+        function getStorageContents(storage) {
+            let contents = '';
+            for (let i = 0; i < storage.length; i++) {
+                const key = storage.key(i);
+                const value = storage.getItem(key);
+                contents += `${key}: ${value}\n`;
+            }
+            return contents || 'No data stored';
+        }
+        
+        function showNotification(message, isError = false) {
+            notification.textContent = message;
+            notification.style.backgroundColor = isError ? '#e74c3c' : '#2ecc71';
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
